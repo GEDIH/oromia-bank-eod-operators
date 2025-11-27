@@ -1,0 +1,2567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EOD Schedule Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- CORE STYLING --- */
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            margin: 0; 
+            padding: 30px;
+            background-color: #e9ecf0; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        /* --- NEW LOGO STYLING --- */
+        .logo-container {
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .header-logo {
+            max-width: 180px; /* Adjust size as needed */
+            height: auto;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* --- EXISTING STYLES --- */
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5);
+            margin-bottom: 25px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: none; border-radius: 8px; overflow: hidden; }
+        caption { font-size: 1.8em; font-weight: 700; text-align: left; padding: 15px 0; background-color: transparent; color: #3f51b5; text-transform: capitalize; }
+        th, td { border-bottom: 1px solid #f0f2f5; padding: 15px; text-align: left; cursor: default; }
+        
+        /* UPDATED: Table Header using RGB(82, 56, 51) */
+        th { 
+            background-color: rgb(82, 56, 51); 
+            color: white; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            font-size: 0.9em; 
+        }
+        
+        tbody tr:hover { background-color: #eef1f6 !important; cursor: pointer; }
+        .highlight { background-color: #fffde7 !important; font-weight: 700; border-left: 5px solid #ffeb3b; }
+        .weekend-day { background-color: #fce4ec !important; color: #c2185b; font-style: italic; }
+        
+        /* --- MODIFIED: NEW HIGHLIGHT FOR NEXT OPERATOR (VIBRANT GREEN) --- */
+        .next-operator-highlight {
+            background-color: #e8f5e9 !important; /* Very light green background */
+            border: 3px solid #4CAF50 !important; /* Green border */
+            font-weight: 700;
+        }
+        
+        /* --- CONTROL & BUTTON STYLING --- */
+        #controls-container { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;}
+        .top-controls-bar { display: flex; justify-content: space-between; width: 100%; max-width: 1100px; margin-bottom: 20px; flex-direction: column; gap: 15px;}
+        button { padding: 10px 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s ease-in-out; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); font-size: 0.9em;}
+        button:hover { opacity: 0.9; box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); transform: translateY(-1px); }
+        .log-out-button { background-color: #f44336; color: white; }
+        
+        /* UPDATED: Add Row Button using #94C83D */
+        .add-row-button { background-color: #94C83D; color: white; } 
+        
+        .swap-button { background-color: #ff9800; color: white; } 
+        .call-button { background-color: #03a9f4; color: white; padding: 5px 10px; font-size: 0.8em; border-radius: 4px; margin-left: 5px; } 
+        .whatsapp-button { background-color: #25D366; color: white; padding: 5px 10px; font-size: 0.8em; border-radius: 4px; margin-left: 5px; } 
+
+        /* --- ROLE & STATUS STYLING --- */
+        .role-manager { background-color: #c9daf8; color: #1c4587; font-weight: 600; padding: 3px 8px; border-radius: 4px;}
+        .role-operator { background-color: #d9ead3; color: #274e13; font-weight: 600; padding: 3px 8px; border-radius: 4px;}
+        .role-viewer { background-color: #fce5cd; color: #783f04; font-weight: 600; padding: 3px 8px; border-radius: 4px;}
+        .editing { border: 2px solid #3f51b5; background-color: #f0f3ff; outline: none; }
+        
+        /* --- Feedback and Persistence --- */
+        #persistence-status { 
+            font-size: 0.9em; 
+            font-weight: 500; 
+            color: #777; 
+            margin-top: 5px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+        }
+        
+        /* --- MODALS --- */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 30px; border: 1px solid #888; width: 90%; max-width: 600px; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+        .modal-content input[type="text"], .modal-content input[type="password"], .modal-content input[type="date"], .modal-content select, .modal-content input[type="email"] { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 8px 0 20px 0; 
+            display: inline-block; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+        }
+        .modal-content button { width: auto; margin-right: 10px; }
+        
+        /* --- removedSkills STYLING --- */
+        .skill-tag { display: inline-block; padding: 3px 8px; margin: 2px; background-color: #ffccbc; color: #d84315; border-radius: 12px; font-size: 0.75em; font-weight: 600; }
+        
+        /* --- LEAVE MANAGER SPECIFIC --- */
+        #leaveForm select, #leaveForm input { width: calc(33% - 10px); display: inline-block; }
+        #leaveList { margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;}
+        .leave-entry { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #f9f9f9; align-items: center; }
+
+        /* --- DARK MODE STYLING --- */
+        /* UPDATED: Dark Mode Body using RGB(26, 0, 70) */
+        body.dark-mode { background-color: rgb(26, 0, 70); color: #e0e0e0; }
+        body.dark-mode .container { background-color: #1e1e1e; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+        body.dark-mode .header-logo {
+            background-color: #1e1e1e;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.05);
+        }
+        body.dark-mode caption { color: #bb86fc; }
+        
+        /* UPDATED: Dark Mode Table Header using complementary purple */
+        body.dark-mode th { background-color: rgb(35, 10, 85); color: #e0e0e0; } 
+        
+        body.dark-mode td { border-bottom-color: #333; }
+        body.dark-mode tbody tr:hover { background-color: #333 !important; }
+        body.dark-mode .highlight { background-color: #30301a !important; border-left-color: #ffcc00; }
+        body.dark-mode .weekend-day { background-color: #401f2f !important; color: #f48fb1; }
+        body.dark-mode .modal-content { background-color: #2c2c2c; color: #e0e0e0; border-color: #444; }
+        body.dark-mode .modal-content input, body.dark-mode .modal-content select { background-color: #333; color: #e0e0e0; border-color: #444; }
+        body.dark-mode #persistence-status { background-color: #333; color: #a0a0a0; }
+        body.dark-mode #taskLogTable th, body.dark-mode #taskLogTable td { border-color: #333; }
+        body.dark-mode #taskLogTable thead th { background-color: #333; }
+        
+        /* MODIFIED: Dark Mode Next Operator Highlight (VIBRANT GREEN) */
+        body.dark-mode .next-operator-highlight {
+            background-color: #1b5e20 !important; /* Darker green background */
+            border-color: #66bb6a !important; /* Lighter green border */
+        }
+
+        /* --- NEW FORGOT PASSWORD STYLING --- */
+        #forgotPasswordLink { 
+            color: #3f51b5; 
+            text-decoration: none; 
+            font-size: 0.9em;
+            transition: color 0.2s;
+        }
+        #forgotPasswordLink:hover {
+            color: #ff9800;
+            text-decoration: underline;
+        }
+        body.dark-mode #forgotPasswordLink {
+            color: #bb86fc !important; 
+        }
+        body.dark-mode #forgotPasswordLink:hover {
+            color: #cf66ff !important;
+        }
+
+        /* --- ENHANCED SHIFT REMINDER STYLING --- */
+        #notificationPanel {
+            display: none; /* Controlled by JS */
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 25px;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            background-color: #e3f2fd; /* Light Blue Background */
+            border: 1px solid #90caf9;
+            transition: background-color 0.3s;
+        }
+        #notificationPanel.dark-mode-override {
+            background-color: #263238; /* Darker blue/grey for contrast in dark mode */
+            border-color: #546e7a;
+            color: #e0e0e0;
+        }
+        #notificationText {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 1.1em;
+            font-weight: 500;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            width: 100%;
+        }
+        #reminderDetails {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .reminder-contact-button {
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.9em;
+            transition: background-color 0.2s, transform 0.1s;
+            white-space: nowrap;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .reminder-email {
+            background-color: #2196f3; /* Blue */
+            color: white;
+        }
+        .reminder-sms {
+            background-color: #4caf50; /* Green */
+            color: white;
+        }
+        .reminder-email:hover, .reminder-sms:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .reminder-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+            color: #f57c00; /* Orange icon */
+        }
+		
+		/* ===== Corporate Banking Login Theme ===== */
+
+body {
+    background: #f0f4f8;
+    font-family: "Segoe UI", "Roboto", sans-serif;
+}
+
+#loginModal .modal-content {
+    max-width: 520px;
+    border-radius: 12px;
+    padding: 40px 45px;
+    background: #ffffff;
+    border-top: 5px solid #00723f; /* Oromia Bank green */
+    box-shadow: 0px 10px 28px rgba(0,0,0,0.15);
+    animation: fadeIn 0.4s ease;
+}
+
+/* Bank Logo Styling */
+.bank-logo {
+    width: 220px;
+    display: block;
+    margin: 0 auto 10px auto;
+}
+
+/* Header */
+#loginModal h2 {
+    font-size: 26px;
+    color: #003b25;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+#loginModal p {
+    color: #455a64;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* Inputs */
+#loginModal input[type="text"],
+#loginModal input[type="password"] {
+    width: 100%;
+    padding: 13px 14px;
+    margin-bottom: 18px;
+    border-radius: 8px;
+    border: 1px solid #b0bec5;
+    background: #fafafa;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+#loginModal input:focus {
+    border-color: #00723f;
+    box-shadow: 0 0 0 2px rgba(0, 114, 63, 0.2);
+    background: #ffffff;
+}
+
+/* Login Button */
+#loginModal button {
+    width: 100%;
+    padding: 13px;
+    background: #00723f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: 0.25s ease;
+    cursor: pointer;
+}
+
+#loginModal button:hover {
+    background: #00994f;
+    box-shadow: 0 4px 12px rgba(0, 153, 79, 0.3);
+}
+
+/* Forgot Password */
+#loginModal .forgot-link {
+    display: block;
+    margin-top: 14px;
+    text-align: right;
+    font-size: 14px;
+    color: #005c8c;
+    text-decoration: none;
+}
+#loginModal .forgot-link:hover {
+    text-decoration: underline;
+}
+
+/* Close Button */
+#loginModal .close {
+    color: #b71c1c;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    float: right;
+}
+#loginModal .close:hover {
+    color: #ff0000;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+		
+    
+/* ---- Login text slideshow ---- */
+#loginInstructions {
+  position: relative;
+  height: 54px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  font-weight: 500;
+  color: #455a64;
+}
+#loginInstructions .slide {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  opacity: 0;
+  white-space: nowrap;
+  padding: 0 8px;
+  font-size: 0.95rem;
+  line-height: 1.15;
+  transition: transform 0.6s cubic-bezier(.2,.9,.3,1), opacity 0.6s ease;
+  text-align: center;
+  width: calc(100% - 16px);
+}
+#loginInstructions .slide.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+#loginInstructions .slide.enter {
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+}
+#loginInstructions .slide.enter.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+#loginInstructions .slide.leave {
+  transform: translateX(-50%) translateY(-8px);
+  opacity: 0;
+}
+@media (max-width: 420px) {
+  #loginInstructions { height: 64px; font-size: 0.9rem; padding: 0 6px; }
+  #loginInstructions .slide { font-size: 0.95rem; }
+}
+
+</style>
+</head>
+<body onbeforeunload="if (unsavedChanges) return 'You have unsaved changes. Are you sure you want to leave?';">
+    
+   <div class="logo-container">
+    <img src="images/oromia bank.png" alt="Oromia Bank">
+</div>
+
+    <div id="saveFeedback" style="display: none;"></div> 
+    <div id="persistence-status">Last Save: Never</div>
+
+    <div class="top-controls-bar">
+        <div id="controls-container">
+            <span id="currentUserRole" style="font-weight: 700; color: #3f51b5; margin-right: 20px;"></span>
+            <span id="operatorCount" style="margin-right: 20px;"></span> 
+            <span id="current-time-display"></span> 
+            
+            <button onclick="toggleTheme()" id="themeToggleButton" style="background-color: #7986cb; color: white;">
+                🌓 Dark Mode (Ctrl+D)
+            </button>
+            
+            <button onclick="showTaskLogModal()" id="logButton" style="background-color: #795548; color: white;">
+                📜 Task Log
+            </button>
+
+            <button onclick="toggleSwapMode()" class="swap-button" id="swapButton" style="display: none;">
+                🔄 Shift Swap
+            </button>
+            
+            <button onclick="performScheduleRotation()" id="rotateButton" style="background-color: #673ab7; color: white; display: none;">
+                🔄 Rotate & Archive
+            </button> 
+            
+            <button onclick="showLeaveManagerModal()" id="leaveManagerButton" style="background-color: #00897b; color: white; display: none;">
+                🏖️ Manage Leave (Ctrl+L)
+            </button>
+            
+            <button onclick="togglePhoneColumn()" style="background-color: #009688; color: white;">
+                Toggle Phone
+            </button>
+            
+            <button onclick="addNewRow()" class="add-row-button" id="addRowButton" style="display: none;">
+                + Add Operator
+            </button>
+
+            <button onclick="showPasswordChangeModal()" id="pwChangeButton" style="background-color: #3f51b5; color: white; display: none;">
+                🔑 Change PW
+            </button> 
+
+            <button onclick="resetAllData()" id="resetDataButton" style="background-color: #c2185b; color: white; display: none;">
+                🗑️ Reset Data
+            </button> 
+            
+            <button onclick="showDataUtilityModal()" id="dataUtilityButton" style="background-color: #757575; color: white; display: none;">
+                💾 Export/Import (Ctrl+I)
+            </button>
+
+            <button onclick="logOutHandler()" class="log-out-button">
+                Log Out
+            </button>
+        </div>
+
+        <div id="planning-controls" style="display: flex; gap: 10px; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; width: 100%;">
+            <label for="futureDate" style="font-weight: 700;">View/Assign Date:</label>
+            <input type="date" id="futureDate" onchange="updateFutureScheduleDisplay()" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+            
+            <select id="operatorSelect" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; display: none;">
+                </select>
+            
+            <button onclick="assignFutureOperator()" id="assignFutureButton" style="background-color: #1a73e8; color: white; display: none; padding: 8px 15px;">Assign</button>
+            
+            <p id="futureDateOutput" style="font-weight: 700; color: #3f51b5; margin: 0; flex-grow: 1;"></p>
+        </div>
+    </div>
+    
+    <div class="container" id="mainContainer" style="display: none;">
+        
+        <div id="notificationPanel">
+            <p id="notificationText" style="margin: 0; font-weight: bold;"></p>
+        </div>
+
+        <div id="search-container" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+            <input type="text" id="scheduleSearch" onkeyup="filterTable()" placeholder="Search by name, day, number, role, or status..." style="flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-right: 15px;">
+            <span id="searchFeedback" style="display: none;"></span>
+
+            <div id="skill-filter-container" style="display: flex; gap: 5px; align-items: center;">
+                <label for="skillFilter" style="font-weight: 700;">Filter by Skill:</label>
+                <select id="skillFilter" onchange="renderTable(loadData())" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <option value="">All removedSkills</option>
+                    </select>
+            </div>
+        </div>
+
+        <table role="table" aria-labelledby="scheduleCaption" aria-rowcount="7">
+            <caption id="scheduleCaption">EOD Operator Schedule</caption>
+            <thead role="rowgroup">
+                <tr role="row">
+                    <th role="columnheader" aria-sort="none" class="sortable" onclick="sortTable(0)">Day</th>
+                    <th role="columnheader" aria-sort="none" class="sortable" onclick="sortTable(1)">Operator Name</th>
+                    <th role="columnheader" aria-sort="none" class="sortable" onclick="sortTable(2)">Phone</th>
+                    <th role="columnheader" aria-sort="none" class="sortable" onclick="sortTable(3)">Role</th> 
+                    <th role="columnheader" aria-sort="none" class="sortable" onclick="sortTable(4)">other</th> 
+                    <th role="columnheader" aria-sort="none" class="sortable" onclick="sortTable(5)">Status</th> 
+                    <th role="columnheader" aria-sort="none" id="taskHeader" class="task-column">Handover</th>
+                    <th role="columnheader" aria-sort="none" id="actionsHeader">Actions</th>
+                </tr>
+            </thead>
+            <tbody role="rowgroup" id="scheduleBody">
+                </tbody>
+        </table>
+
+        <div id="visualizationModule" style="margin-top: 30px; padding: 20px; border-top: 1px solid #ccc; background-color: #fcfcfc; border-radius: 8px;">
+            <h3>Operator Workload Distribution (7-Day Cycle)</h3>
+            <div id="workloadChart">
+                </div>
+        </div>
+        
+    </div>
+
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span onclick="document.getElementById('loginModal').style.display='none'" style="float: right; cursor: pointer; font-size: 1.5em; color: #f44336;">&times;</span>
+			<img src="images/oromia bank.png" class="m3-logo" alt="oromia bank" />
+            <h2>EOD Schedule Login</h2>
+            <p id="loginInstructions">Please enter your credentials. Maaloo ragaa keessan galchaa. እባክዎ የመግቢያ ማስረጃዎችዎን ያስገቡ.</p>
+            <input type="text" id="username" placeholder="Username (e.g., admin or operator name)" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button onclick="handleLogin()">Log In</button>
+            <div style="text-align: right; margin-top: 10px;">
+                <a href="#" onclick="showForgotPasswordModal(); return false;" id="forgotPasswordLink">Forgot password?</a>
+            </div>
+            <p id="loginMessage"></p>
+            <p style="font-size: 0.8em; margin-top: 15px;"></p>
+        </div>
+    </div>
+
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content">
+            <span onclick="hideForgotPasswordModal(); showLoginModal()" style="float: right; cursor: pointer; font-size: 1.5em; color: #f44336;">&times;</span>
+            <h2>Reset Password</h2>
+            <p>Enter your Username and we'll send you a link to reset your password.</p>
+            <input type="email" id="resetEmail" placeholder="Enter Email" required>
+            <button onclick="handleForgotPassword()">Send Reset Link</button>
+            <button onclick="hideForgotPasswordModal(); showLoginModal()" style="background-color: #757575; color: white;">Cancel & Return to Login</button>
+            <p id="forgotPasswordMessage"></p>
+        </div>
+    </div>
+
+    <div id="pwChangeModal" class="modal">
+        <div class="modal-content">
+            <span onclick="document.getElementById('pwChangeModal').style.display='none'" style="float: right; cursor: pointer; font-size: 1.5em; color: #f44336;">&times;</span>
+            <h2>Change Manager Password</h2>
+            <p>You must be logged in as Manager to change the password.</p>
+            <input type="password" id="currentPassword" placeholder="Current Password" required>
+            <input type="password" id="newPassword" placeholder="New Password" required>
+            <input type="password" id="confirmNewPassword" placeholder="Confirm New Password" required>
+            <button onclick="changeManagerPassword()">Set New Password</button>
+            <p id="pwChangeMessage"></p>
+        </div>
+    </div>
+    
+    <div id="taskLogModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span onclick="document.getElementById('taskLogModal').style.display='none'" style="float: right; cursor: pointer; font-size: 1.5em; color: #f44336;">&times;</span>
+            <h2>EOD Handover Audit Log</h2>
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table id="taskLogTable" style="margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Scheduled Day</th>
+                            <th>Operator</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taskLogBody">
+                    </tbody >
+                </table>
+            </div>
+            <p id="taskLogMessage" style="margin-top: 15px; color: #555;"></p>
+            <button onclick="clearTaskLog()" style="background-color: #f44336; margin-top: 20px;">Clear Log (Manager Only)</button>
+        </div>
+    </div>
+
+    <div id="leaveManagerModal" class="modal">
+        <div class="modal-content" style="max-width: 650px;">
+            <span onclick="document.getElementById('leaveManagerModal').style.display='none'" style="float: right; cursor: pointer; font-size: 1.5em; color: #f44336;">&times;</span>
+            <h2>Operator Leave Management</h2>
+            <p>Define periods when operators are unavailable. This updates the Future Assignment warning.</p>
+            
+            <div id="leaveForm" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <select id="leaveOperatorSelect" style="flex-grow: 1;"></select>
+                <input type="date" id="leaveStartDate" style="flex-grow: 1;">
+                <input type="date" id="leaveEndDate" style="flex-grow: 1;">
+                <button onclick="addLeaveEntry()" style="background-color: #3f51b5; color: white; width: 100%; margin-top: 10px;">Add Leave Period</button>
+            </div>
+
+            <h3 style="margin-top: 25px;">Current Leave Schedule</h3>
+            <div id="leaveList">
+                </div>
+        </div>
+    </div>
+    
+    <div id="dataUtilityModal" class="modal">
+        <div class="modal-content">
+            <span onclick="document.getElementById('dataUtilityModal').style.display='none'" style="float: right; cursor: pointer; font-size: 1.5em; color: #f44336;">&times;</span>
+            <h2>Data Backup and Restore</h2>
+            <p>Use these tools to backup your entire application state (schedule, log, leave, assignments) or restore from a previous backup.</p>
+            
+            <button onclick="exportData()" style="background-color: #4CAF50; color: white; margin-top: 20px;">
+                ⬇️ Export All Data (JSON)
+            </button>
+            
+            <h3 style="margin-top: 25px;">Restore Data</h3>
+            <input type="file" id="importFile" accept="application/json">
+            <button onclick="importData()" style="background-color: #ff5722; color: white; margin-top: 10px;">
+                ⬆️ Import and Overwrite Data
+            </button>
+            <p id="importMessage" style="margin-top: 10px; color: #c2185b;"></p>
+        </div>
+    </div>
+
+    <div class="modal" id="logoutConfirmationModal">
+        <div class="modal-content">
+            <p id="logoutConfirmationText" style="margin-bottom: 20px;">Are you sure you want to log out of the EOD Schedule Portal?</p>
+            <button id="logoutYesBtn" style="background-color: #f44336; color: white;">Yes, Logout</button>
+            <button id="logoutNoBtn" style="background-color: #757575; color: white;">No, Cancel</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="logoutModal">
+        <div class="modal-content">
+            <p>You have successfully logged out.</p>
+            <button id="logoutModalBtn" style="background-color: #4CAF50; color: white;">OK</button>
+        </div>
+    </div>
+<div class="footer">© 2025 EOD Operators Schedule | All rights reserved | Developed by HAMBISA ADAMU.</div>
+    <script>
+        // ---CONSTANTS AND VARIABLES ---
+        const LOCAL_STORAGE_KEY = 'eodScheduleData';
+        const TASK_LOG_KEY = 'eodTaskLog'; 
+        const LEAVE_SCHEDULE_KEY = 'eodLeaveSchedule';
+        
+        let currentRole = null; 
+        let swapMode = false; 
+        let firstSwapRow = null; 
+        let unsavedChanges = false; 
+        let futureAssignments = JSON.parse(localStorage.getItem('futureAssignments') || '{}');
+        let leaveSchedule = JSON.parse(localStorage.getItem(LEAVE_SCHEDULE_KEY) || '{}');
+        let lastSaveTime = localStorage.getItem('lastSaveTime') || 'Never';
+
+        // NEW: Global for next shift details for rendering
+        let nextShiftDetails = { day: null, operator: null, dateKey: null };
+
+        // Credentials -
+        let MANAGER_USERNAME = 'admin';
+        let MANAGER_PASSWORD = 'Admin@1234$#@!';
+        const VIEWER_USERNAME = 'viewer';
+        const VIEWER_PASSWORD = 'viewer123';
+        const OPERATOR_PASSWORD = 'op123'; 
+
+        // Initial Data Set
+        const initialData = [
+            { day: 'Monday', name: 'Bikiltu Fikadu', phone: '951040236', role: 'Operator', taskCompleted: false, removedSkills: ['Level 1 Support', 'Networking'] }, 
+            { day: 'Tuesday', name: 'Chaltu Lemessa', phone: '973185321', role: 'Operator', taskCompleted: false, removedSkills: ['Level 2 Support', 'Database Admin'] },
+            { day: 'Wednesday', name: 'Dereje Taye', phone: '922843187', role: 'Operator', taskCompleted: false, removedSkills: ['Level 1 Support', 'Networking'] },
+            { day: 'Thursday', name: 'Netsanet Mekonnen', phone: '911742068', role: 'Operator', taskCompleted: false, removedSkills: ['Level 3 Support', 'Firewalls'] }, 
+            { day: 'Friday', name: 'Henok Tadesse', phone: '910741001', role: 'Operator', taskCompleted: false, removedSkills: ['Level 2 Support', 'Database Admin'] },
+            { day: 'Saturday', name: 'Eyerusalem Abdisa', phone: '912729684', role: 'Operator', taskCompleted: false, removedSkills: ['Level 1 Support'] },
+            { day: 'Sunday', name: 'No Operator', phone: '000000000', role: 'Viewer', taskCompleted: false, removedSkills: [] } 
+        ];
+
+        // Global DOM Elements
+        const scheduleBody = document.getElementById('scheduleBody');
+        const persistenceStatus = document.getElementById('persistence-status'); 
+
+        // --- CORE DATA MANAGEMENT ---
+
+        function loadData() {
+            const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+            const data = storedData ? JSON.parse(storedData) : initialData;
+            return data.map(item => ({ ...item, removedSkills: item.removedSkills || [] }));
+        }
+
+        function saveData(data) {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+            unsavedChanges = false;
+            updatePersistenceStatus();
+        }
+        
+        function saveFutureAssignments() {
+            localStorage.setItem('futureAssignments', JSON.stringify(futureAssignments));
+            updatePersistenceStatus();
+        }
+
+        function updatePersistenceStatus() {
+            lastSaveTime = new Date().toLocaleString();
+            localStorage.setItem('lastSaveTime', lastSaveTime);
+            persistenceStatus.textContent = `Last Save: ${lastSaveTime} (Ctrl+S)`;
+        }
+
+        function resetAllData() {
+            if (currentRole !== 'Manager') {
+                alert("Only the Manager can reset all data.");
+                return;
+            }
+            if (confirm("WARNING: Are you sure you want to delete ALL custom schedule data and revert to the initial default data? This cannot be undone.")) {
+                localStorage.removeItem(LOCAL_STORAGE_KEY);
+                localStorage.removeItem('futureAssignments');
+                localStorage.removeItem(TASK_LOG_KEY); 
+                localStorage.removeItem(LEAVE_SCHEDULE_KEY);
+                futureAssignments = {};
+                leaveSchedule = {};
+                alert("Schedule data has been reset to defaults.");
+                logIn(); 
+            }
+        }
+
+        function updateCurrentTime() {
+            const timeElement = document.getElementById('current-time-display');
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const timezone = now.toLocaleTimeString('en-US', { timeZoneName:'short' }).split(' ').pop();
+            timeElement.textContent = `${dateStr} | ${timeStr} ${timezone}`;
+        }
+        setInterval(updateCurrentTime, 1000); 
+        
+        function getDayOfWeek(dateString) {
+            const date = typeof dateString === 'string' ? new Date(dateString.replace(/-/g, '/')) : dateString;
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[date.getDay()];
+        }
+
+        // --- AUTHENTICATION & FLOW ---
+        
+        function authenticateUser(username, password) {
+            const data = loadData();
+            if (username.toLowerCase() === MANAGER_USERNAME.toLowerCase() && password === MANAGER_PASSWORD) return 'Manager';
+            if (username.toLowerCase() === VIEWER_USERNAME.toLowerCase() && password === VIEWER_PASSWORD) return 'Viewer';
+            const operator = data.find(op => op.name.toLowerCase() === username.toLowerCase() && op.role.toLowerCase() === 'operator');
+            if (operator && password === OPERATOR_PASSWORD) return 'Operator';
+            return null; 
+        }
+
+        function showLoginModal() {
+            document.getElementById('mainContainer').style.display = 'none';
+            document.getElementById('loginModal').style.display = 'block';
+            document.getElementById('loginMessage').textContent = '';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function handleLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const role = authenticateUser(username, password);
+
+            if (role) {
+                currentRole = role; 
+                document.getElementById('loginModal').style.display = 'none';
+                logIn(); 
+            } else {
+                document.getElementById('loginMessage').textContent = 'Invalid username or password.';
+            }
+        }
+        
+        function logOut() {
+            currentRole = null; 
+            document.getElementById('currentUserRole').textContent = '';
+            // showLoginModal() is now handled by the modal flow after success message.
+        }
+        
+        function logOutHandler() {
+            const confirmModal = document.getElementById('logoutConfirmationModal');
+            const confirmationText = document.getElementById('logoutConfirmationText');
+            
+            if (unsavedChanges) {
+                confirmationText.innerHTML = "You have unsaved changes. Are you sure you want to log out and lose them?<br><br><strong>Note:</strong> Pressing 'Yes, Logout' will discard them.";
+            } else {
+                 confirmationText.textContent = "Are you sure you want to log out of the EOD Schedule Portal?";
+            }
+            
+            confirmModal.style.display = 'block';
+        }
+
+        function logIn() {
+            document.getElementById('mainContainer').style.display = 'block';
+            document.getElementById('currentUserRole').textContent = `Logged in as: ${currentRole}`;
+
+            const canAddDelete = currentRole === 'Manager';
+            document.getElementById('addRowButton').style.display = canAddDelete ? 'inline-block' : 'none';
+            document.getElementById('swapButton').style.display = currentRole === 'Manager' ? 'inline-block' : 'none'; 
+            document.getElementById('pwChangeButton').style.display = currentRole === 'Manager' ? 'inline-block' : 'none'; 
+            document.getElementById('rotateButton').style.display = canAddDelete ? 'inline-block' : 'none';
+            document.getElementById('resetDataButton').style.display = canAddDelete ? 'inline-block' : 'none';
+            document.getElementById('leaveManagerButton').style.display = canAddDelete ? 'inline-block' : 'none';
+            document.getElementById('dataUtilityButton').style.display = canAddDelete ? 'inline-block' : 'none';
+            
+            updatePersistenceStatus();
+            const data = loadData();
+            renderTable(data);
+            notifyNextOperator();
+            
+            if (currentRole === 'Manager') {
+                populateOperatorSelect();
+            }
+        }
+        
+        function showPasswordChangeModal() {
+            if (currentRole !== 'Manager') return;
+            document.getElementById('pwChangeModal').style.display = 'block';
+            document.getElementById('pwChangeMessage').textContent = '';
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+        }
+
+        function changeManagerPassword() {
+            const current = document.getElementById('currentPassword').value;
+            const newPw = document.getElementById('newPassword').value;
+            const confirmPw = document.getElementById('confirmNewPassword').value;
+            const msg = document.getElementById('pwChangeMessage');
+
+            if (current !== MANAGER_PASSWORD) {
+                msg.textContent = "Current password incorrect.";
+                return;
+            }
+            if (newPw !== confirmPw) {
+                msg.textContent = "New passwords do not match.";
+                return;
+            }
+            if (newPw.length < 8) {
+                msg.textContent = "New password must be at least 8 characters.";
+                return;
+            }
+
+            MANAGER_PASSWORD = newPw;
+            msg.textContent = "Password successfully changed!";
+            msg.style.color = '#4CAF50';
+            
+            setTimeout(() => { document.getElementById('pwChangeModal').style.display = 'none'; }, 2000);
+        }
+
+        // --- NEW: FORGOT PASSWORD LOGIC ---
+
+        function showForgotPasswordModal() {
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('forgotPasswordModal').style.display = 'block';
+            document.getElementById('forgotPasswordMessage').textContent = '';
+            document.getElementById('resetEmail').value = '';
+        }
+
+        function hideForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').style.display = 'none';
+        }
+
+        function handleForgotPassword() {
+            const email = document.getElementById('resetEmail').value.trim();
+            const msg = document.getElementById('forgotPasswordMessage');
+            
+            // Basic validation
+            if (!email || !email.includes('@')) {
+                msg.textContent = 'Please enter a valid email address.';
+                msg.style.color = '#f44336';
+                return;
+            }
+
+            // Security Best Practice: Always show a generic success message to prevent user enumeration.
+            msg.textContent = "If an account with that email exists, a password reset link has been sent. Please check your email.";
+            msg.style.color = '#4CAF50';
+            
+            // Clear form and set a delay to return to login
+            document.getElementById('resetEmail').value = '';
+            setTimeout(() => {
+                hideForgotPasswordModal();
+                showLoginModal();
+            }, 3000);
+        }
+
+        // --- DATA EDITING & VALIDATION ---
+        
+        function sanitizeInput(input) {
+            return input.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function validateAndCorrectData(dataLabel, value) {
+            let newValue = value.trim();
+
+            if (dataLabel === 'Phone') {
+                const phoneRegex = /^\d{9,15}$/;
+                const sanitized = newValue.replace(/\D/g, '');
+                if (!phoneRegex.test(sanitized)) {
+                    alert("Phone number must contain 9 to 15 digits.");
+                    return null;
+                }
+                newValue = sanitized;
+            } 
+            
+            if (dataLabel === 'Day') {
+                 if (newValue.toLowerCase().includes('thur')) { 
+                    newValue = 'Thursday';
+                 }
+            }
+            
+            if (dataLabel === 'removedSkills') {
+                return newValue.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            }
+
+            return sanitizeInput(newValue);
+        }
+
+        function updateCellData(cell) {
+            if (currentRole === 'Viewer') return; 
+
+            const tr = cell.closest('tr');
+            if (!tr) return;
+
+            const rowIndex = tr.dataset.index;
+            const dataLabel = cell.dataset.label;
+            const rawValue = cell.textContent;
+            
+            const currentData = loadData();
+            const index = parseInt(rowIndex);
+            const dataKey = dataLabel.toLowerCase().replace(/\s/g, '');
+            
+            let newValue;
+            let originalValue;
+
+            if (dataLabel === 'removedSkills') {
+                originalValue = (currentData[index].removedSkills || []).join(', ');
+                newValue = validateAndCorrectData(dataLabel, rawValue);
+            } else {
+                originalValue = currentData[index][dataKey];
+                newValue = validateAndCorrectData(dataLabel, rawValue);
+            }
+
+            if (newValue === null || (dataLabel !== 'removedSkills' && newValue === originalValue)) {
+                cell.textContent = originalValue;
+                return;
+            }
+            
+            if (currentRole === 'Operator' && (dataLabel === 'Day' || dataLabel === 'removedSkills')) {
+                 cell.textContent = originalValue; 
+                 alert("Operators cannot change Day or removedSkills.");
+                 return;
+            }
+
+            if (dataLabel === 'Role') {
+                 const validRoles = ['Manager', 'Operator', 'Viewer'];
+                 const normalizedNewValue = newValue.charAt(0).toUpperCase() + newValue.slice(1).toLowerCase(); 
+
+                 if (validRoles.includes(normalizedNewValue)) {
+                    currentData[index].role = normalizedNewValue;
+                 } else {
+                    alert(`Invalid role entered. Must be one of: ${validRoles.join(', ')}.`);
+                    cell.textContent = originalValue; 
+                    return; 
+                 }
+            } else if (dataLabel === 'removedSkills') {
+                currentData[index].removedSkills = newValue;
+            } else {
+                currentData[index][dataKey] = newValue;
+            }
+            
+            saveData(currentData);
+            unsavedChanges = true; 
+            renderTable(currentData); 
+        }
+        
+        function addLiveEditingListeners() {
+            let selector = 'td:not([data-label="Phone"]):not([data-label="Status"]):not([data-label="Actions"]):not([data-label="Handover"])';
+            
+            if (currentRole === 'Operator') {
+                selector = 'td:not([data-label="Phone"]):not([data-label="Status"]):not([data-label="Actions"]):not([data-label="Handover"]):not([data-label="Day"]):not([data-label="removedSkills"])'; 
+            }
+
+            const editableCells = scheduleBody.querySelectorAll(selector);
+            
+            editableCells.forEach(cell => {
+                cell.contentEditable = true;
+                
+                if (cell.dataset.label === 'removedSkills') {
+                    cell.addEventListener('focus', () => { 
+                        const data = loadData();
+                        const rowIndex = cell.closest('tr').dataset.index;
+                        cell.textContent = (data[rowIndex].removedSkills || []).join(', ');
+                        cell.classList.add('editing');
+                    });
+                } else {
+                    cell.addEventListener('focus', () => { cell.classList.add('editing'); });
+                }
+
+                cell.addEventListener('blur', (e) => {
+                    cell.classList.remove('editing');
+                    updateCellData(e.target);
+                });
+
+                cell.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.target.blur();
+                    }
+                });
+            });
+        }
+        
+        // --- DATA MODIFICATION (Add/Delete/Swap/Rotate) --- 
+        function addNewRow() {
+            if (currentRole !== 'Manager') return;
+            const currentData = loadData();
+            const newDay = 'New Day'; 
+            const newRow = { day: newDay, name: 'New Operator', phone: '999999999', role: 'Operator', taskCompleted: false, removedSkills: [] };
+            currentData.push(newRow);
+            saveData(currentData);
+            renderTable(currentData);
+            unsavedChanges = true;
+        }
+
+        function deleteRow(button) {
+            if (currentRole !== 'Manager') return;
+            const tr = button.closest('tr');
+            const rowIndex = tr.dataset.originalIndex; 
+            const operatorName = tr.querySelector('[data-label="Operator Name"]').textContent.trim().replace('📧', '').trim();
+            
+            if (!confirm(`Are you sure you want to delete the schedule entry for ${operatorName} on ${tr.querySelector('[data-label="Day"]').textContent}?`)) {
+                return;
+            }
+
+            const currentData = loadData();
+            currentData.splice(parseInt(rowIndex), 1);
+            saveData(currentData);
+            renderTable(currentData);
+            unsavedChanges = true;
+        }
+
+        function toggleSwapMode() {
+            if (currentRole !== 'Manager') return;
+            swapMode = !swapMode;
+            firstSwapRow = null; 
+            const rows = scheduleBody.querySelectorAll('tr');
+            const button = document.getElementById('swapButton');
+
+            rows.forEach(row => {
+                row.removeEventListener('click', handleSwapClick);
+                row.classList.remove('swap-selected');
+                row.style.border = 'none';
+            });
+
+            if (swapMode) {
+                rows.forEach(row => {
+                    row.addEventListener('click', handleSwapClick);
+                });
+                button.textContent = '1️⃣ Select First Row (Click schedule)';
+                alert("Swap Mode Activated. Click the first row to select it.");
+            } else {
+                button.textContent = '🔄 Shift Swap';
+                alert("Swap Mode Deactivated.");
+            }
+        }
+
+        function handleSwapClick(event) {
+            const clickedRow = event.currentTarget;
+            const rowIndex = clickedRow.dataset.index; 
+            const originalIndex = clickedRow.dataset.originalIndex;
+
+            // Ensure we use the index from the data array, not the filtered/sorted DOM index
+            const data = loadData();
+            const operatorName = data[originalIndex].name;
+
+
+            if (firstSwapRow === null) {
+                firstSwapRow = parseInt(originalIndex);
+                clickedRow.classList.add('swap-selected');
+                clickedRow.style.border = '3px solid #ff9800';
+                document.getElementById('swapButton').textContent = `2️⃣ Select Second Row (Swapping ${operatorName})`;
+            } else if (firstSwapRow === parseInt(originalIndex)) {
+                firstSwapRow = null;
+                clickedRow.classList.remove('swap-selected');
+                clickedRow.style.border = 'none';
+                document.getElementById('swapButton').textContent = '1️⃣ Select First Row (Click schedule)';
+            } else {
+                const secondSwapRow = parseInt(originalIndex);
+                performSwap(firstSwapRow, secondSwapRow);
+                toggleSwapMode();
+            }
+        }
+
+        function performSwap(index1, index2) {
+            const data = loadData();
+            if (index1 < 0 || index1 >= data.length || index2 < 0 || index2 >= data.length) return;
+
+            // Simple property swap for operator-specific properties
+            const temp = { 
+                name: data[index1].name, 
+                phone: data[index1].phone, 
+                role: data[index1].role, 
+                taskCompleted: data[index1].taskCompleted, 
+                removedSkills: data[index1].removedSkills 
+            };
+            
+            data[index1].name = data[index2].name;
+            data[index1].phone = data[index2].phone;
+            data[index1].role = data[index2].role;
+            data[index1].taskCompleted = data[index2].taskCompleted;
+            data[index1].removedSkills = data[index2].removedSkills;
+            
+            data[index2].name = temp.name;
+            data[index2].phone = temp.phone;
+            data[index2].role = temp.role;
+            data[index2].taskCompleted = temp.taskCompleted;
+            data[index2].removedSkills = temp.removedSkills;
+
+            saveData(data);
+            renderTable(data);
+            alert(`Swapped ${data[index1].day}'s operator with ${data[index2].day}'s operator.`);
+        }
+
+        function performScheduleRotation() {
+            if (currentRole !== 'Manager') return;
+            if (!confirm("Are you sure you want to rotate the schedule? This will archive the current data, and shift all operator assignments one day forward (e.g., Monday operator moves to Tuesday).")) {
+                return;
+            }
+
+            const currentData = loadData();
+            const daysOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+            
+            // 1. Extract only the assignable properties
+            const assignments = currentData.map(item => ({ 
+                name: item.name, 
+                phone: item.phone, 
+                role: item.role, 
+                taskCompleted: false, // Reset task completion for new week
+                removedSkills: item.removedSkills 
+            }));
+
+            // 2. Perform the rotation (Last item becomes first)
+            const rotatedAssignments = [assignments[assignments.length - 1], ...assignments.slice(0, assignments.length - 1)];
+
+            // 3. Apply the rotated assignments back to the original days
+            const newData = currentData.map((item, index) => {
+                const rotatedItem = rotatedAssignments[index];
+                return {
+                    day: item.day, // Keep the day constant
+                    name: rotatedItem.name,
+                    phone: rotatedItem.phone,
+                    role: rotatedItem.role,
+                    taskCompleted: rotatedItem.taskCompleted,
+                    removedSkills: rotatedItem.removedSkills
+                };
+            });
+            
+            saveData(newData);
+            renderTable(newData);
+            alert("Schedule rotated successfully. Operator assignments shifted one day forward.");
+        }
+
+        // --- TASK LOGGING & HANDOVER ---
+        const today = new Date().toLocaleDateString('en-US');
+
+        function loadTaskLog() {
+            return JSON.parse(localStorage.getItem(TASK_LOG_KEY) || '[]');
+        }
+
+        function saveTaskLog(log) {
+            localStorage.setItem(TASK_LOG_KEY, JSON.stringify(log));
+        }
+
+        function logTaskCompletion(originalIndex, isCompleted) {
+            if (currentRole === 'Viewer') return;
+            
+            const data = loadData();
+            const task = data[originalIndex];
+            task.taskCompleted = isCompleted;
+            saveData(data); // Save the updated completion status
+
+            // Log the event
+            const log = loadTaskLog();
+            const timestamp = new Date().toISOString();
+            const status = isCompleted ? 'Completed' : 'Reverted';
+
+            
+            
+            log.push({
+                timestamp: timestamp,
+                date: today,
+                scheduledDay: task.day,
+                operator: task.name,
+                status: status
+            });
+            
+            saveTaskLog(log);
+            renderTable(data); // Re-render to update status display
+        }
+
+        function toggleTaskCompletion(index, isCompleted) {
+            logTaskCompletion(index, isCompleted);
+        }
+
+        function showTaskLogModal() {
+            if (currentRole === 'Viewer') return;
+            const modal = document.getElementById('taskLogModal');
+            modal.style.display = 'block';
+            renderTaskLog();
+        }
+
+        function renderTaskLog() {
+            const log = loadTaskLog();
+            const logBody = document.getElementById('taskLogBody');
+            logBody.innerHTML = '';
+
+            // Filter log to only show today's and relevant entries
+            const todayLog = log.filter(entry => {
+                // Ensure date comparison is only on the day
+                const entryDate = new Date(entry.timestamp).toLocaleDateString('en-US');
+                return entryDate === today;
+            }).reverse(); // Show newest entries first
+
+            if (todayLog.length === 0) {
+                document.getElementById('taskLogMessage').textContent = 'No task activity recorded for today.';
+                return;
+            }
+
+            document.getElementById('taskLogMessage').textContent = `Showing ${todayLog.length} task entries for ${today}.`;
+
+            todayLog.forEach(entry => {
+                const tr = document.createElement('tr');
+                const statusColor = entry.status === 'Completed' ? '#4CAF50' : '#ff9800';
+                tr.innerHTML = `
+                    <td>${new Date(entry.timestamp).toLocaleTimeString('en-US')}</td>
+                    <td>${entry.scheduledDay}</td>
+                    <td>${entry.operator}</td>
+                    <td style="color: ${statusColor}; font-weight: bold;">${entry.status}</td>
+                `;
+                logBody.appendChild(tr);
+            });
+        }
+
+        function clearTaskLog() {
+            if (currentRole !== 'Manager') {
+                alert("Only the Manager can clear the log.");
+                return;
+            }
+            if (confirm("Are you sure you want to permanently clear the entire EOD Task Audit Log?")) {
+                localStorage.removeItem(TASK_LOG_KEY);
+                renderTaskLog();
+                alert("Task log cleared.");
+            }
+        }
+
+        // --- removedSkills MANAGEMENT & FILTERING ---
+        function getUniqueSkills(data) {
+            const allSkills = data.flatMap(item => item.removedSkills || []);
+            return [...new Set(allSkills)].sort();
+        }
+
+        function populateSkillFilter(data) {
+            const select = document.getElementById('skillFilter');
+            const selectedSkill = select.value;
+            select.innerHTML = '<option value="">All removedSkills</option>';
+            const uniqueSkills = getUniqueSkills(data);
+            uniqueSkills.forEach(skill => {
+                const option = document.createElement('option');
+                option.value = skill;
+                option.textContent = skill;
+                select.appendChild(option);
+            });
+            select.value = selectedSkill;
+        }
+
+        // --- DATA VISUALIZATION ---
+        function renderWorkloadChart(data) {
+            const chartContainer = document.getElementById('workloadChart');
+            chartContainer.innerHTML = '';
+            
+            // Tally up operator appearances (workload)
+            const workload = data.reduce((acc, item) => {
+                const name = item.name;
+                if (item.role === 'Operator' && name !== 'No Operator') {
+                    acc[name] = (acc[name] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const maxCount = Math.max(...Object.values(workload), 1);
+
+            // Render bars
+            for (const name in workload) {
+                const count = workload[name];
+                const percentage = (count / maxCount) * 100;
+
+                const barDiv = document.createElement('div');
+                barDiv.style.marginBottom = '10px';
+                
+                // Add color based on workload saturation (green to red)
+                let color;
+                if (count <= 1) { color = '#4CAF50'; } // Low
+                else if (count <= 2) { color = '#FFC107'; } // Medium
+                else { color = '#F44336'; } // High
+
+                barDiv.innerHTML = `
+                    <div style="font-weight: 500; font-size: 0.9em; margin-bottom: 3px;">${name} (${count} Day${count !== 1 ? 's' : ''})</div>
+                    <div style="height: 15px; background-color: #eee; border-radius: 4px; overflow: hidden;">
+                        <div style="width: ${percentage}%; height: 100%; background-color: ${color}; transition: width 0.5s;"></div>
+                    </div>
+                `;
+                chartContainer.appendChild(barDiv);
+            }
+        }
+        
+        // --- FUTURE SCHEDULING & LEAVE MANAGEMENT ---
+
+        function saveLeaveSchedule() {
+            localStorage.setItem(LEAVE_SCHEDULE_KEY, JSON.stringify(leaveSchedule));
+        }
+
+        function populateOperatorSelect() {
+            const select = document.getElementById('operatorSelect');
+            const leaveSelect = document.getElementById('leaveOperatorSelect');
+            const data = loadData();
+            
+            select.innerHTML = '<option value="">(Default)</option>';
+            leaveSelect.innerHTML = '<option value="">-- Select Operator --</option>';
+
+            data.filter(op => op.role === 'Operator').forEach(op => {
+                const option = document.createElement('option');
+                option.value = op.name;
+                option.textContent = op.name;
+                select.appendChild(option);
+
+                const leaveOption = option.cloneNode(true);
+                leaveSelect.appendChild(leaveOption);
+            });
+        }
+
+        function isOperatorOnLeave(operatorName, dateString) {
+            if (!leaveSchedule[operatorName]) return false;
+            const targetDate = new Date(dateString);
+
+            for (const entry of leaveSchedule[operatorName]) {
+                const start = new Date(entry.start);
+                const end = new Date(entry.end);
+                
+                // Normalize dates for comparison
+                start.setHours(0, 0, 0, 0);
+                end.setHours(23, 59, 59, 999);
+                targetDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+
+                if (targetDate >= start && targetDate <= end) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function updateFutureScheduleDisplay() {
+            const dateString = document.getElementById('futureDate').value;
+            const output = document.getElementById('futureDateOutput');
+            const operatorSelect = document.getElementById('operatorSelect');
+            const assignButton = document.getElementById('assignFutureButton');
+            const data = loadData();
+
+            if (!dateString) {
+                output.textContent = "";
+                operatorSelect.style.display = 'none';
+                assignButton.style.display = 'none';
+                return;
+            }
+
+            const dateKey = dateString;
+            const inputDayName = getDayOfWeek(dateString);
+            const scheduleDay = data.find(item => item.day === inputDayName);
+
+            let assignedName;
+            let source = 'Default Schedule';
+            output.style.color = '#3f51b5'; // Default color
+
+            if (futureAssignments[dateKey]) {
+                assignedName = futureAssignments[dateKey];
+                source = 'Special Assignment';
+                output.style.color = '#c2185b'; // Special color for override
+            } else if (scheduleDay) {
+                assignedName = scheduleDay.name;
+            } else {
+                assignedName = 'N/A';
+                source = 'No Default';
+                output.style.color = '#555';
+            }
+
+            let leaveStatus = '';
+            if (assignedName !== 'N/A' && isOperatorOnLeave(assignedName, dateString)) {
+                leaveStatus = '❌ ON LEAVE';
+                output.style.color = '#f44336'; // Danger color
+            }
+
+            output.textContent = `${inputDayName}, ${dateKey}: ${assignedName} (${source}) ${leaveStatus}`;
+
+            if (currentRole === 'Manager') {
+                populateOperatorSelect(data);
+                operatorSelect.value = assignedName === 'N/A' ? '' : assignedName;
+                operatorSelect.style.display = 'inline-block';
+                assignButton.style.display = 'inline-block';
+            } else {
+                operatorSelect.style.display = 'none';
+                assignButton.style.display = 'none';
+            }
+        }
+
+        function assignFutureOperator() {
+            if (currentRole !== 'Manager') return;
+            const dateString = document.getElementById('futureDate').value;
+            const newOperator = document.getElementById('operatorSelect').value;
+
+            if (!dateString || !newOperator) {
+                alert("Please select a date and an operator.");
+                return;
+            }
+
+            const dateKey = dateString;
+            
+            if (newOperator === futureAssignments[dateKey]) {
+                 // Check if the assigned operator is the default for that day and we are trying to clear it
+                 const inputDayName = getDayOfWeek(dateString);
+                 const scheduleDay = loadData().find(item => item.day === inputDayName);
+                 if (newOperator === (scheduleDay ? scheduleDay.name : '') && futureAssignments[dateKey]) {
+                     // We are setting it to the default when it was an override. We should clear the override.
+                    delete futureAssignments[dateKey];
+                    alert(`Special assignment for ${dateKey} cleared. Reverted to default schedule.`);
+                 } else {
+                    alert("Operator is already assigned for this date.");
+                    return;
+                 }
+            } else {
+                futureAssignments[dateKey] = newOperator;
+                alert(`Successfully assigned ${newOperator} for ${dateKey}.`);
+            }
+            
+            saveFutureAssignments();
+            updateFutureScheduleDisplay(); // Refresh display
+        }
+
+        function showLeaveManagerModal() {
+            if (currentRole !== 'Manager') return;
+            document.getElementById('leaveManagerModal').style.display = 'block';
+            populateOperatorSelect();
+            renderLeaveSchedule();
+        }
+
+        function addLeaveEntry() {
+            const name = document.getElementById('leaveOperatorSelect').value;
+            const start = document.getElementById('leaveStartDate').value;
+            const end = document.getElementById('leaveEndDate').value;
+
+            if (!name || !start || !end) {
+                alert("Please select an operator, start date, and end date.");
+                return;
+            }
+            if (new Date(start) > new Date(end)) {
+                alert("Start date cannot be after end date.");
+                return;
+            }
+
+            leaveSchedule[name] = leaveSchedule[name] || [];
+            leaveSchedule[name].push({ start: start, end: end });
+            
+            saveLeaveSchedule();
+            renderLeaveSchedule();
+            updateFutureScheduleDisplay();
+            alert(`Leave added for ${name} from ${start} to ${end}.`);
+        }
+
+        function removeLeaveEntry(name, index) {
+            if (leaveSchedule[name] && leaveSchedule[name][index]) {
+                leaveSchedule[name].splice(index, 1);
+                if (leaveSchedule[name].length === 0) {
+                    delete leaveSchedule[name];
+                }
+                saveLeaveSchedule();
+                renderLeaveSchedule();
+                updateFutureScheduleDisplay();
+            }
+        }
+
+        function renderLeaveSchedule() {
+            const list = document.getElementById('leaveList');
+            list.innerHTML = '';
+            let hasEntries = false;
+
+            for (const name in leaveSchedule) {
+                leaveSchedule[name].forEach((entry, index) => {
+                    hasEntries = true;
+                    const div = document.createElement('div');
+                    div.className = 'leave-entry';
+                    div.innerHTML = `
+                        <span> 
+                            <strong>${name}</strong>: ${entry.start} to ${entry.end} 
+                        </span>
+                        <button onclick="removeLeaveEntry('${name}', ${index})" style="background-color: #f44336; color: white; padding: 5px 10px; font-size: 0.8em; width: auto;">Remove</button>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+
+            if (!hasEntries) {
+                list.innerHTML = '<p style="color: #999;">No active leave periods recorded.</p>';
+            }
+        }
+
+        // --- DATA PORTABILITY ---
+        function showDataUtilityModal() {
+            if (currentRole !== 'Manager') return;
+            document.getElementById('dataUtilityModal').style.display = 'block';
+            document.getElementById('importMessage').textContent = '';
+        }
+
+        function exportData() {
+            const exportObject = {
+                eodScheduleData: loadData(),
+                eodTaskLog: loadTaskLog(),
+                eodLeaveSchedule: leaveSchedule,
+                futureAssignments: futureAssignments,
+                managerPassword: MANAGER_PASSWORD // Include manager password for full backup
+            };
+            const dataStr = JSON.stringify(exportObject, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = `eod_schedule_backup_${new Date().toISOString().split('T')[0]}.json`;
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function importData() {
+            if (!confirm("WARNING: Importing data will overwrite ALL current schedule, log, leave, and assignment data. Are you sure?")) {
+                return;
+            }
+
+            const fileInput = document.getElementById('importFile');
+            const msgElement = document.getElementById('importMessage');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                msgElement.textContent = 'Please select a file to import.';
+                msgElement.style.color = '#f44336';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (importedData.eodScheduleData) {
+                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(importedData.eodScheduleData));
+                    }
+                    if (importedData.eodTaskLog) {
+                        localStorage.setItem(TASK_LOG_KEY, JSON.stringify(importedData.eodTaskLog));
+                    }
+                    if (importedData.eodLeaveSchedule) {
+                        leaveSchedule = importedData.eodLeaveSchedule;
+                        saveLeaveSchedule();
+                    }
+                    if (importedData.futureAssignments) {
+                        futureAssignments = importedData.futureAssignments;
+                        saveFutureAssignments();
+                    }
+                    if (importedData.managerPassword) {
+                        MANAGER_PASSWORD = importedData.managerPassword;
+                    }
+                    
+                    msgElement.textContent = 'Data successfully imported and saved. Please log in to see changes.';
+                    msgElement.style.color = '#4CAF50';
+                    
+                    // Force log out and refresh to apply changes
+                    setTimeout(() => {
+                        document.getElementById('dataUtilityModal').style.display = 'none';
+                        logOut();
+                        showLoginModal();
+                    }, 2000);
+
+                } catch (error) {
+                    msgElement.textContent = `Error importing data: ${error.message}. Ensure the file is a valid backup JSON.`;
+                    msgElement.style.color = '#f44336';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- THEME MANAGEMENT ---
+        function loadTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.body.classList.toggle('dark-mode', theme === 'dark');
+            document.getElementById('themeToggleButton').textContent = theme === 'dark' ? '☀️ Light Mode (Ctrl+D)' : '🌓 Dark Mode (Ctrl+D)';
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            document.getElementById('themeToggleButton').textContent = isDarkMode ? '☀️ Light Mode (Ctrl+D)' : '🌓 Dark Mode (Ctrl+D)';
+            // Re-render to update notification panel's dark mode styling
+            notifyNextOperator(); 
+            // Re-render table to ensure zebra striping and highlights are correct
+            renderTable(loadData()); 
+        }
+
+        // --- KEYBOARD SHORTCUTS ---
+        window.addEventListener('keydown', function(e) {
+            const isTyping = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true';
+
+            // Ctrl + S (Update Persistence Status)
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (!isTyping) {
+                    updatePersistenceStatus();
+                    alert("Persistence indicator updated.");
+                }
+            }
+            // Ctrl + D (Dark Mode Toggle)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                e.preventDefault();
+                if (!isTyping) {
+                    toggleTheme();
+                }
+            }
+            // Ctrl + L (Leave Manager - Manager only)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'l' && currentRole === 'Manager') {
+                e.preventDefault();
+                if (!isTyping) {
+                    showLeaveManagerModal();
+                }
+            }
+            // Ctrl + I (Import/Export - Manager only)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'i' && currentRole === 'Manager') {
+                e.preventDefault();
+                if (!isTyping) {
+                    showDataUtilityModal();
+                }
+            }
+        });
+
+        // --- VIEW & DISPLAY ---
+        function renderTable(data) {
+            scheduleBody.innerHTML = '';
+            const selectedSkill = document.getElementById('skillFilter').value;
+            let filteredData = data;
+
+            if (selectedSkill) {
+                filteredData = data.filter(row => row.removedSkills && row.removedSkills.includes(selectedSkill));
+            }
+
+            const canEdit = currentRole === 'Manager' || currentRole === 'Operator';
+            const showActions = currentRole === 'Manager';
+            const showTasks = currentRole === 'Manager' || currentRole === 'Operator';
+            
+            // Toggle visibility of Task/Handover and Actions columns in the header
+            document.querySelectorAll('th:nth-child(7), td:nth-child(7)').forEach(el => el.style.display = showTasks ? 'table-cell' : 'none');
+            document.querySelectorAll('th:nth-child(8), td:nth-child(8)').forEach(el => el.style.display = showActions ? 'table-cell' : 'none');
+
+            const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const currentDayIndex = new Date().getDay();
+            const today = new Date();
+
+            filteredData.forEach((row, originalIndex) => {
+                const tr = document.createElement('tr');
+                tr.dataset.index = originalIndex;
+                tr.dataset.originalIndex = originalIndex; // Store original index for modification
+                
+                const phoneLink = row.phone.replace(/\D/g, '');
+                const checked = row.taskCompleted ? 'checked' : '';
+                const disabled = currentRole === 'Viewer' ? 'disabled' : '';
+                const operatorNameSlug = row.name.toLowerCase().replace(/\s/g, '.');
+                
+                const skillTagsHtml = (row.removedSkills || []).map(skill => `<span class="skill-tag">${skill}</span>` ).join('');
+
+                const rowDayIndex = dayNames.indexOf(row.day);
+                let dayOffset = (rowDayIndex - currentDayIndex + 7) % 7;
+                const rowDate = new Date();
+                rowDate.setDate(rowDate.getDate() + dayOffset);
+                const dateDisplay = rowDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+                const dateKey = rowDate.toISOString().split('T')[0]; // YYYY-MM-DD
+
+                // Check for Future Assignment Override
+                let assignedName = row.name;
+                let assignedRole = row.role;
+                let overrideHtml = '';
+
+                if (futureAssignments[dateKey]) {
+                    assignedName = futureAssignments[dateKey];
+                    const defaultAssignment = data.find(item => item.day === row.day);
+                    
+                    if (assignedName !== (defaultAssignment ? defaultAssignment.name : '')) {
+                        overrideHtml = `<span style="color: #c2185b; font-size: 0.8em; margin-left: 5px;">(Override: ${assignedName})</span>`;
+                        // Attempt to find the role of the special assigned operator for coloring
+                        const assignedOperatorData = data.find(op => op.name === assignedName);
+                        if (assignedOperatorData) {
+                            assignedRole = assignedOperatorData.role;
+                        }
+                    }
+                }
+                
+                const currentRoleClass = `role-${assignedRole.toLowerCase()}`;
+
+                // --- NEW: Next Operator Highlight Logic ---
+                const isNextOperator = 
+                    nextShiftDetails.dateKey === dateKey && 
+                    assignedName === nextShiftDetails.operator;
+                    
+                if (isNextOperator) {
+                    tr.classList.add('next-operator-highlight');
+                }
+
+                tr.innerHTML = `
+                    <td role="cell" data-label="Day">${row.day} (${dateDisplay})</td>
+                    <td role="cell" data-label="Operator Name">
+                        <a href="mailto:${operatorNameSlug}@example.com" style="margin-right: 10px; color: #1565c0;">📧</a> 
+                        ${assignedName}
+                        ${overrideHtml}
+                    </td>
+                    <td role="cell" data-label="Phone">
+                        <a href="tel:${phoneLink}" style="color: inherit;">${row.phone}</a>
+                        <button onclick="window.location.href='tel:${phoneLink}'" class="call-button">📞</button>
+                        <button onclick="window.open('https://wa.me/${phoneLink}', '_blank')" class="whatsapp-button">WP</button>
+                    </td>
+                    <td role="cell" data-label="Role" class="${currentRoleClass}">${assignedRole}</td>
+                    <td role="cell" data-label="removedSkills">
+                        ${skillTagsHtml}
+                    </td>
+                    <td role="cell" data-label="Status"></td>
+                    <td role="cell" data-label="Handover" class="task-column" style="display: ${showTasks ? 'table-cell' : 'none'}">
+                        <input type="checkbox" ${checked} ${disabled} onclick="toggleTaskCompletion(${originalIndex}, this.checked)">
+                    </td>
+                    <td role="cell" data-label="Actions" style="display: ${showActions ? 'table-cell' : 'none'}">
+                        <button onclick="deleteRow(this)" style="background-color:#d32f2f; color:white; padding: 5px 10px; font-size: 0.8em;">Delete</button>
+                    </td>
+                `;
+                scheduleBody.appendChild(tr);
+            });
+
+            updateOperatorStatus();
+            applyZebraStriping();
+            highlightCurrentDay();
+
+            if (currentRole === 'Manager') {
+                renderWorkloadChart(data);
+                populateSkillFilter(data);
+            }
+
+            if (canEdit) {
+                addLiveEditingListeners();
+            }
+            
+            filterTable(); // Re-apply search filter if one exists
+        }
+
+
+        function highlightCurrentDay() {
+            const currentDay = getDayOfWeek(new Date()).toLowerCase();
+            const rows = scheduleBody.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                const dayCell = rows[i].getElementsByTagName('td')[0];
+                // Only highlight the current day if it's not already highlighted as the "next operator"
+                if (dayCell && dayCell.textContent.toLowerCase().includes(currentDay) && !rows[i].classList.contains('next-operator-highlight')) {
+                    rows[i].classList.add('highlight');
+                    break; 
+                }
+            }
+        }
+
+        function updateOperatorStatus() {
+            const data = loadData();
+            const rows = scheduleBody.getElementsByTagName('tr');
+            const operatorCountSpan = document.getElementById('operatorCount');
+            let availableOperators = 0;
+            let currentOperator = null;
+            
+            const currentDay = getDayOfWeek(new Date()).toLowerCase();
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const taskCompleted = row.querySelector('input[type="checkbox"]').checked;
+                const statusCell = row.querySelector('td[data-label="Status"]');
+                const operatorName = row.querySelector('td[data-label="Operator Name"]').textContent.trim().replace('📧', '').split('(Override:')[0].trim();
+                const role = row.querySelector('td[data-label="Role"]').textContent.trim();
+                const day = row.querySelector('td[data-label="Day"]').textContent.split(' ')[0].toLowerCase();
+                const dateMatch = row.querySelector('td[data-label="Day"]').textContent.match(/\((.*?)\)/);
+                const dateKey = dateMatch ? dateMatch[1] : null; 
+                
+                let statusText = '';
+                let statusColor = '';
+
+                // Check for leave status first
+                if (isOperatorOnLeave(operatorName, dateKey)) {
+                    statusText = 'ON LEAVE 🏖️';
+                    statusColor = '#d9534f'; 
+                } else if (role === 'Operator') {
+                    availableOperators++;
+                    if (day === currentDay) {
+                        currentOperator = operatorName;
+                        if (taskCompleted) {
+                            statusText = 'HANDOVER COMPLETED ✅';
+                            statusColor = '#5cb85c';
+                        } else {
+                            statusText = 'ACTIVE 🟠';
+                            statusColor = '#f0ad4e';
+                        }
+                    } else {
+                        statusText = 'AVAILABLE';
+                        statusColor = '#337ab7';
+                    }
+                } else {
+                    statusText = 'N/A';
+                    statusColor = '#777';
+                }
+                
+                statusCell.innerHTML = `<span style="color: ${statusColor}; font-weight: 700;">${statusText}</span>`;
+            }
+
+            operatorCountSpan.textContent = `Operators Available: ${availableOperators} | Current EOD Operator: ${currentOperator || 'None'}`;
+        }
+        
+        function notifyNextOperator() {
+            const data = loadData();
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const currentDayIndex = new Date().getDay();
+            
+            const notificationPanel = document.getElementById('notificationPanel');
+            const notificationText = document.getElementById('notificationText');
+            
+            const nextDayIndex = (currentDayIndex + 1) % days.length;
+            const nextDayName = days[nextDayIndex];
+            const nextOperatorSchedule = data.find(op => op.day.toLowerCase() === nextDayName.toLowerCase());
+
+            // Apply dark mode class for visual enhancement
+            if (document.body.classList.contains('dark-mode')) {
+                notificationPanel.classList.add('dark-mode-override');
+            } else {
+                notificationPanel.classList.remove('dark-mode-override');
+            }
+
+            if (nextOperatorSchedule) {
+                let operatorName = nextOperatorSchedule.name;
+                let operatorPhone = nextOperatorSchedule.phone;
+                let operatorRole = nextOperatorSchedule.role;
+
+                // Determine next date key (tomorrow)
+                const nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + 1);
+                const nextDateKey = nextDate.toISOString().split('T')[0];
+                
+                // Check for future assignment override on the next day's date
+                if (futureAssignments[nextDateKey]) {
+                    const assignedOperator = data.find(op => op.name === futureAssignments[nextDateKey]);
+                    if (assignedOperator) {
+                        operatorName = assignedOperator.name;
+                        operatorPhone = assignedOperator.phone;
+                        operatorRole = assignedOperator.role;
+                    }
+                }
+                
+                // Check if the assigned operator is on leave
+                const onLeave = isOperatorOnLeave(operatorName, nextDateKey);
+                
+                // Store global details for rendering
+                nextShiftDetails.day = nextDayName;
+                nextShiftDetails.dateKey = nextDateKey;
+                nextShiftDetails.operator = operatorName;
+
+                const operatorEmail = operatorName.toLowerCase().replace(/\s/g, '.') + '@example.com';
+                const mailLink = `mailto:${operatorEmail}?subject=EOD Shift Reminder - ${nextDayName}&body=Hi ${operatorName},%0A%0AThis is a reminder that you are scheduled for the EOD shift on **${nextDayName}, ${nextDateKey}**. Please ensure you are prepared!%0A%0A--%0AAutomatic Schedule Notification`;
+                const smsLink = `sms:${operatorPhone}&body=EOD Shift Reminder: You are on shift on ${nextDayName}, ${nextDateKey}. Please check the EOD schedule.`;
+
+                const onLeaveWarning = onLeave ? '<span style="color: #f44336; font-weight: 700;">⚠️ OPERATOR IS ON LEAVE!</span>' : '';
+                
+                // ENHANCED HTML STRUCTURE
+                notificationText.innerHTML = `
+                    <div id="reminderDetails">
+                        <span class="reminder-icon">🗓️</span> 
+                        <div style="line-height: 1.4;">
+                            <strong style="font-size: 1.2em; color: #0d47a1;">UPCOMING EOD SHIFT: ${nextDayName.toUpperCase()}</strong><br>
+                            Operator: <span style="font-weight: 700;">${operatorName}</span> (Role: ${operatorRole}) ${onLeaveWarning}
+                            <span style="font-style: italic; font-weight: 500; color: #f57c00; margin-left: 10px;"></span>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="${mailLink}" class="reminder-contact-button reminder-email" target="_blank">
+                            📧 Send Email
+                        </a> 
+                        <a href="${smsLink}" class="reminder-contact-button reminder-sms">
+                            💬 Send SMS
+                        </a>
+                    </div>
+                `;
+                notificationPanel.style.display = 'flex'; // Use flex for better alignment
+            } else {
+                notificationPanel.style.display = 'none';
+                nextShiftDetails = { day: null, operator: null, dateKey: null };
+            }
+        }
+        
+        function applyZebraStriping() {
+            const rows = scheduleBody.getElementsByTagName('tr');
+            let visibleIndex = 0;
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                if (row.style.display !== 'none') {
+                    // Reset all classes and inline styles related to striping/weekend
+                    row.style.backgroundColor = '';
+                    row.classList.remove('highlight', 'weekend-day', 'even-row', 'odd-row');
+                    
+                    const dayCell = row.getElementsByTagName('td')[0];
+                    const day = dayCell ? dayCell.textContent.split(' ')[0].toLowerCase() : '';
+
+                    if (row.classList.contains('next-operator-highlight')) {
+                        // Skip striping and other highlights if it's the next operator
+                        visibleIndex++;
+                        continue;
+                    }
+                    
+                    if (day.includes('saturday') || day.includes('sunday')) {
+                        row.classList.add('weekend-day');
+                    } else if (visibleIndex % 2 === 0) {
+                        // Even visible row (0, 2, 4...)
+                        if (!document.body.classList.contains('dark-mode')) {
+                           row.style.backgroundColor = '#f9f9f9';
+                        }
+                    }
+                    visibleIndex++;
+                }
+            }
+        }
+
+        function filterTable() {
+            const filter = document.getElementById("scheduleSearch").value.toUpperCase();
+            const rows = scheduleBody.getElementsByTagName("tr");
+            const feedbackElement = document.getElementById("searchFeedback");
+            let visibleRowCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                let row = rows[i];
+                let cells = row.getElementsByTagName("td");
+                let match = false;
+
+                for (let j = 0; j < cells.length; j++) {
+                    if (cells[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                        match = true;
+                        break;
+                    }
+                }
+
+                if (match) {
+                    row.style.display = "";
+                    visibleRowCount++;
+                } else {
+                    row.style.display = "none";
+                }
+            }
+            
+            applyZebraStriping(); // Re-apply striping to visible rows
+
+            // Update search feedback
+            if (filter.length > 0) {
+                if (visibleRowCount > 0) {
+                    feedbackElement.textContent = `${visibleRowCount} result(s) found.`;
+                    feedbackElement.style.backgroundColor = '#e8f5e9';
+                    feedbackElement.style.color = '#2e7d32';
+                    feedbackElement.style.display = 'inline-block';
+                } else {
+                    feedbackElement.textContent = `No matches found for "${document.getElementById("scheduleSearch").value}".`;
+                    feedbackElement.style.backgroundColor = '#ffebee';
+                    feedbackElement.style.color = '#d32f2f';
+                    feedbackElement.style.display = 'inline-block';
+                }
+            } else {
+                feedbackElement.style.display = 'none';
+            }
+        }
+
+        function togglePhoneColumn() {
+            const phoneCells = document.querySelectorAll('th:nth-child(3), td:nth-child(3)');
+            const isVisible = phoneCells[0].style.display !== 'none';
+            phoneCells.forEach(cell => {
+                cell.style.display = isVisible ? 'none' : 'table-cell';
+            });
+        }
+        
+        let sortColumn = -1;
+        let sortDirection = 1; // 1 for ascending, -1 for descending
+
+        function sortTable(columnIndex) {
+            const table = document.querySelector('table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Determine sort direction
+            if (sortColumn === columnIndex) {
+                sortDirection *= -1;
+            } else {
+                sortDirection = 1;
+                sortColumn = columnIndex;
+            }
+
+            const getCellValue = (row, index) => {
+                const cell = row.children[index];
+                if (cell.dataset.label === 'Day') {
+                    // Sort by day order
+                    const dayText = cell.textContent.split(' ')[0];
+                    return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].indexOf(dayText);
+                }
+                return cell.textContent.trim().toLowerCase();
+            };
+
+            rows.sort((rowA, rowB) => {
+                const valueA = getCellValue(rowA, columnIndex);
+                const valueB = getCellValue(rowB, columnIndex);
+                
+                if (valueA < valueB) return -1 * sortDirection;
+                if (valueA > valueB) return 1 * sortDirection;
+                return 0;
+            });
+
+            // Re-append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+            
+            // Reset and set new arrow indicator (using th aria-sort)
+            document.querySelectorAll('.sortable').forEach(th => th.setAttribute('aria-sort', 'none'));
+            const header = document.querySelectorAll('.sortable')[columnIndex];
+            if (header) {
+                header.setAttribute('aria-sort', sortDirection === 1 ? 'ascending' : 'descending');
+            }
+            
+            applyZebraStriping();
+            highlightCurrentDay(); // Re-apply highlight
+        }
+
+        // --- Logout Modal Setup (Ensure correct flow to Login) ---
+        function setupLogoutModals() {
+            const confirmModal = document.getElementById('logoutConfirmationModal');
+            const successModal = document.getElementById('logoutModal');
+            const yesBtn = document.getElementById('logoutYesBtn');
+            const noBtn = document.getElementById('logoutNoBtn');
+            const okBtn = document.getElementById('logoutModalBtn');
+
+            if (!yesBtn) return; // Safety check 
+
+            // Logic when 'Yes, Logout' is clicked on the confirmation modal
+            yesBtn.onclick = function() {
+                confirmModal.style.display = 'none';
+                logOut(); // Resets user state (role, status)
+                successModal.style.display = 'block';
+            };
+
+            // Logic when 'No, Cancel' is clicked on the confirmation modal
+            noBtn.onclick = function() {
+                confirmModal.style.display = 'none';
+            };
+
+            // Logic when 'OK' is clicked on the success modal
+            okBtn.onclick = function() {
+                successModal.style.display = 'none';
+                showLoginModal(); // Redirects to login page after success message
+            };
+        }
+
+        // --- Initial Load ---
+        window.onload = function() {
+            updateCurrentTime();
+            loadTheme();
+            setupLogoutModals(); 
+            // Load manager password if stored (for persistence across sessions)
+            if (localStorage.getItem('managerPassword')) {
+                MANAGER_PASSWORD = localStorage.getItem('managerPassword');
+            }
+            showLoginModal();
+        }
+    
+/* ---- loginInstructions slideshow ---- */
+(function() {
+  const lines = [
+    "Please enter your credentials.",
+    "Maaloo ragaa keessan galchaa.",
+    "እባክዎ የመግቢያ ማስረጃዎችዎን ያስገቡ."
+  ];
+  const wrapper = document.getElementById('loginInstructions');
+  if (!wrapper) return;
+  wrapper.innerHTML = '';
+  const slides = lines.map((text, i) => {
+    const s = document.createElement('div');
+    s.className = 'slide';
+    s.innerText = text;
+    if (i === 0) s.classList.add('visible');
+    wrapper.appendChild(s);
+    return s;
+  });
+  let idx = 0;
+  const intervalMs = 3000;
+  let timer = null;
+  function showNext() {
+    const current = slides[idx];
+    current.classList.add('leave');
+    current.classList.remove('visible');
+    idx = (idx + 1) % slides.length;
+    const next = slides[idx];
+    next.classList.remove('leave');
+    next.classList.add('enter');
+    setTimeout(() => {
+      next.classList.add('visible');
+      next.classList.remove('enter');
+    }, 50);
+    setTimeout(() => {
+      current.classList.remove('leave');
+    }, 700);
+  }
+  function startTimer() {
+    if (timer) return;
+    timer = setInterval(showNext, intervalMs);
+  }
+  function stopTimer() {
+    if (!timer) return;
+    clearInterval(timer);
+    timer = null;
+  }
+  const loginModal = document.getElementById('loginModal');
+  if (loginModal && loginModal.style.display === 'block') startTimer();
+  const observer = new MutationObserver(() => {
+    if (!loginModal) return;
+    if (loginModal.style.display === 'block') {
+      startTimer();
+    } else {
+      stopTimer();
+    }
+  });
+  if (loginModal) observer.observe(loginModal, { attributes: true, attributeFilter: ['style'] });
+  const originalShowLoginModal = window.showLoginModal;
+  window.showLoginModal = function() {
+    originalShowLoginModal && originalShowLoginModal();
+    setTimeout(startTimer, 120);
+  };
+})();
+
+</script>
+
+
+
+
+<!-- ==== NEW MODULES: Admin Panel, Message Center, Asset Manager, Analytics, Theme Builder, Access Log ==== -->
+<!-- Admin Panel Modal -->
+<div id="adminPanelModal" class="modal">
+  <div class="modal-content" style="max-width:900px;">
+    <span onclick="document.getElementById('adminPanelModal').style.display='none'" style="float:right;cursor:pointer;font-size:1.5em;color:#f44336;">&times;</span>
+    <h2>Admin Panel (SuperAdmin)</h2>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:280px;">
+        <h3>Users</h3>
+        <table id="adminUserTable" style="width:100%;border-collapse:collapse;">
+          <thead><tr><th>Name</th><th>Role</th><th>Dept</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <button onclick="showAddUserForm()" style="margin-top:10px;background-color:#4CAF50;color:white;">+ Add User</button>
+      </div>
+      <div style="flex:1;min-width:280px;">
+        <h3>System Settings</h3>
+        <label>Default Department: <input id="settingDefaultDept" placeholder="e.g. EOD"></label><br><br>
+        <label>Enable Browser Notifications: <input type="checkbox" id="settingPushEnabled"></label><br><br>
+        <button onclick="saveSystemSettings()" style="background-color:#2196f3;color:white;">Save Settings</button>
+        <hr>
+        <h4>Access Log (recent)</h4>
+        <div id="accessLogPreview" style="max-height:180px;overflow:auto;font-size:0.9em;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Form Modal -->
+<div id="addUserModal" class="modal">
+  <div class="modal-content" style="max-width:600px;">
+    <span onclick="document.getElementById('addUserModal').style.display='none'" style="float:right;cursor:pointer;font-size:1.5em;color:#f44336;">&times;</span>
+    <h3>Add / Edit User</h3>
+    <input id="au_name" placeholder="Full name" /><br><br>
+    <input id="au_phone" placeholder="Phone (digits only)" /><br><br>
+    <select id="au_role">
+      <option value="Operator">Operator</option>
+      <option value="Manager">Manager</option>
+      <option value="Viewer">Viewer</option>
+      <option value="SuperAdmin">SuperAdmin</option>
+    </select>
+    <input id="au_dept" placeholder="Department (e.g. EOD)" style="margin-left:10px;"/>
+    <br><br>
+    <button onclick="saveUserFromForm()" style="background-color:#4CAF50;color:white;">Save</button>
+  </div>
+</div>
+
+<!-- Message Center Modal -->
+<div id="messageCenterModal" class="modal">
+  <div class="modal-content" style="max-width:800px;">
+    <span onclick="document.getElementById('messageCenterModal').style.display='none'" style="float:right;cursor:pointer;font-size:1.5em;color:#f44336;">&times;</span>
+    <h2>Message Center</h2>
+    <div style="display:flex;gap:15px;">
+      <div style="flex:1;">
+        <h4>New Message</h4>
+        <select id="msg_recipient"><option value="">All</option></select><br><br>
+        <input id="msg_subject" placeholder="Subject" style="width:100%"/><br><br>
+        <textarea id="msg_body" placeholder="Message body" style="width:100%;height:120px;"></textarea><br>
+        <button onclick="sendMessage()" style="background-color:#1a73e8;color:white;">Send</button>
+      </div>
+      <div style="flex:1;">
+        <h4>Inbox</h4>
+        <div id="messageList" style="max-height:260px;overflow:auto;border:1px solid #eee;padding:8px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Asset Manager Modal -->
+<div id="assetManagerModal" class="modal">
+  <div class="modal-content" style="max-width:700px;">
+    <span onclick="document.getElementById('assetManagerModal').style.display='none'" style="float:right;cursor:pointer;font-size:1.5em;color:#f44336;">&times;</span>
+    <h2>Asset / Document Manager</h2>
+    <input type="file" id="assetFile" /><button onclick="uploadAsset()" style="margin-left:8px;background-color:#4CAF50;color:white;">Upload</button>
+    <div id="assetList" style="margin-top:12px;max-height:240px;overflow:auto;"></div>
+  </div>
+</div>
+
+<!-- Theme Builder Modal -->
+<div id="themeBuilderModal" class="modal">
+  <div class="modal-content" style="max-width:600px;">
+    <span onclick="document.getElementById('themeBuilderModal').style.display='none'" style="float:right;cursor:pointer;font-size:1.5em;color:#f44336;">&times;</span>
+    <h2>Theme Builder</h2>
+    <label>Primary Color: <input id="theme_primary" type="color" value="#3f51b5" /></label><br><br>
+    <label>Accent Color: <input id="theme_accent" type="color" value="#ff9800" /></label><br><br>
+    <button onclick="applyThemeBuilder()" style="background-color:#3f51b5;color:white;">Apply</button>
+    <button onclick="saveThemeTemplate()" style="background-color:#4CAF50;color:white;margin-left:8px;">Save Template</button>
+  </div>
+</div>
+
+<!-- Analytics small panel -->
+<div id="analyticsPanel" style="display:none;max-width:1100px;margin-top:18px;">
+  <div class="container" style="padding:18px;">
+    <h3>Analytics Dashboard</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:220px;">
+        <strong>Total Operators:</strong> <span id="analytics_total_ops">0</span><br>
+        <strong>On Leave Today:</strong> <span id="analytics_onleave">0</span>
+      </div>
+      <div style="flex:2;min-width:300px;">
+        <div id="analytics_chart" style="height:140px;background:#fff;border:1px solid #eee;padding:8px;border-radius:6px;overflow:auto;"></div>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <button onclick="exportAnalyticsPDF()" style="background:#673ab7;color:white;">Export PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End new modules -->
+
+<script>
+
+/* ==== NEW MODULES JS ==== */
+
+// Simple IndexedDB wrapper for access log and messages
+const DB_NAME = 'eod_app_db';
+const DB_VERSION = 1;
+let idb = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (idb) return resolve(idb);
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = function(e) {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('accessLog')) db.createObjectStore('accessLog', {keyPath:'id', autoIncrement:true});
+      if (!db.objectStoreNames.contains('messages')) db.createObjectStore('messages', {keyPath:'id', autoIncrement:true});
+      if (!db.objectStoreNames.contains('assets')) db.createObjectStore('assets', {keyPath:'id', autoIncrement:true});
+    };
+    req.onsuccess = function(e) { idb = e.target.result; resolve(idb); };
+    req.onerror = function(e) { reject(e); };
+  });
+}
+
+async function addAccessLog(entry) {
+  const db = await openDB();
+  const tx = db.transaction('accessLog','readwrite');
+  tx.objectStore('accessLog').add({...entry, ts: new Date().toISOString()});
+  return tx.complete;
+}
+
+async function recentAccessLogs(limit=20) {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('accessLog','readonly');
+    const store = tx.objectStore('accessLog');
+    const req = store.openCursor(null,'prev');
+    const out = [];
+    req.onsuccess = function(e) {
+      const cur = e.target.result;
+      if (cur && out.length < limit) { out.push(cur.value); cur.continue(); } else res(out);
+    };
+    req.onerror = (e) => rej(e);
+  });
+}
+
+async function saveMessage(msg) {
+  const db = await openDB();
+  const tx = db.transaction('messages','readwrite');
+  tx.objectStore('messages').add(msg);
+  return tx.complete;
+}
+
+async function loadMessages() {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('messages','readonly');
+    const store = tx.objectStore('messages');
+    const req = store.openCursor(null,'prev');
+    const out = [];
+    req.onsuccess = function(e) {
+      const cur = e.target.result;
+      if (cur) { out.push(cur.value); cur.continue(); } else res(out);
+    };
+    req.onerror = (e)=> rej(e);
+  });
+}
+
+async function saveAsset(meta, dataUrl) {
+  const db = await openDB();
+  const tx = db.transaction('assets','readwrite');
+  tx.objectStore('assets').add({meta, dataUrl, ts: new Date().toISOString()});
+  return tx.complete;
+}
+async function loadAssets() {
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('assets','readonly');
+    const store = tx.objectStore('assets');
+    const req = store.openCursor(null,'prev');
+    const out = [];
+    req.onsuccess = function(e) {
+      const cur = e.target.result;
+      if (cur) { out.push(cur.value); cur.continue(); } else res(out);
+    };
+    req.onerror = (e)=> rej(e);
+  });
+}
+
+// ===== Admin Panel =====
+function showAdminPanel() {
+  // Only Manager or SuperAdmin allow (superadmin role is considered Manager with elevated perms)
+  if (currentRole !== 'Manager' && currentRole !== 'SuperAdmin') { alert('Access denied.'); return; }
+  document.getElementById('adminPanelModal').style.display = 'block';
+  document.getElementById('settingDefaultDept').value = localStorage.getItem('eod_default_dept') || 'EOD';
+  document.getElementById('settingPushEnabled').checked = localStorage.getItem('eod_push_enabled') === '1';
+  renderAdminUsers();
+  renderAccessLogPreview();
+}
+
+function renderAdminUsers() {
+  const data = loadData();
+  const tbody = document.querySelector('#adminUserTable tbody');
+  tbody.innerHTML = '';
+  data.forEach((u, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${u.name}</td><td>${u.role||'Operator'}</td><td>${u.dept||u.department||'EOD'}</td>
+      <td><button onclick="deleteUserByIndex(${idx})" style="background:#d32f2f;color:#fff;">Delete</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function showAddUserForm() {
+  document.getElementById('addUserModal').style.display = 'block';
+  document.getElementById('au_name').value = '';
+  document.getElementById('au_phone').value = '';
+  document.getElementById('au_dept').value = localStorage.getItem('eod_default_dept') || 'EOD';
+  document.getElementById('au_role').value = 'Operator';
+}
+
+function saveUserFromForm() {
+  const name = document.getElementById('au_name').value.trim();
+  const phone = document.getElementById('au_phone').value.replace(/\D/g,'').trim();
+  const role = document.getElementById('au_role').value;
+  const dept = document.getElementById('au_dept').value.trim() || localStorage.getItem('eod_default_dept') || 'EOD';
+  if (!name) { alert('Enter name'); return; }
+  const data = loadData();
+  data.push({day:'Custom', name, phone: phone||'000000000', role, taskCompleted:false, removedSkills:[], dept});
+  saveData(data);
+  renderTable(data);
+  document.getElementById('addUserModal').style.display = 'none';
+  renderAdminUsers();
+}
+
+// delete user by array index (careful)
+function deleteUserByIndex(idx) {
+  if (!confirm('Delete user?')) return;
+  const data = loadData();
+  data.splice(idx,1);
+  saveData(data);
+  renderTable(data);
+  renderAdminUsers();
+}
+
+// system settings
+function saveSystemSettings() {
+  localStorage.setItem('eod_default_dept', document.getElementById('settingDefaultDept').value || 'EOD');
+  localStorage.setItem('eod_push_enabled', document.getElementById('settingPushEnabled').checked ? '1' : '0');
+  alert('Settings saved.');
+}
+
+// ===== Message Center =====
+async function openMessageCenter() {
+  if (!currentRole) { alert('Please login'); return; }
+  document.getElementById('messageCenterModal').style.display = 'block';
+  populateMessageRecipients();
+  await renderMessages();
+}
+function populateMessageRecipients() {
+  const select = document.getElementById('msg_recipient');
+  select.innerHTML = '<option value="">All</option>';
+  const data = loadData();
+  data.forEach(d => {
+    const opt = document.createElement('option'); opt.value = d.name; opt.textContent = `${d.name} (${d.dept||d.department||'EOD'})`; select.appendChild(opt);
+  });
+}
+async function sendMessage() {
+  const to = document.getElementById('msg_recipient').value;
+  const subject = document.getElementById('msg_subject').value.trim();
+  const body = document.getElementById('msg_body').value.trim();
+  if (!subject || !body) { alert('Subject and body required'); return; }
+  const msg = {to: to||'ALL', from: currentRole, subject, body, ts:new Date().toISOString()};
+  await saveMessage(msg);
+  document.getElementById('msg_subject').value=''; document.getElementById('msg_body').value='';
+  await renderMessages();
+  if (localStorage.getItem('eod_push_enabled') === '1') {
+    notifyBrowser(`New message: ${subject}`, body.slice(0,120));
+  }
+}
+async function renderMessages() {
+  const list = document.getElementById('messageList');
+  list.innerHTML = '';
+  const msgs = await loadMessages();
+  msgs.forEach(m=>{
+    const div = document.createElement('div'); div.style.borderBottom='1px solid #eee'; div.style.padding='6px 0';
+    div.innerHTML = `<strong>${m.subject}</strong> &nbsp; <small>${new Date(m.ts).toLocaleString()}</small><div>${m.body}</div>`;
+    list.appendChild(div);
+  });
+}
+
+// ===== Asset Manager =====
+async function uploadAsset() {
+  const f = document.getElementById('assetFile').files[0];
+  if (!f) { alert('Select file'); return; }
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    await saveAsset({name:f.name,size:f.size,type:f.type}, e.target.result);
+    document.getElementById('assetFile').value = '';
+    renderAssets();
+  };
+  reader.readAsDataURL(f);
+}
+async function renderAssets() {
+  const list = document.getElementById('assetList');
+  list.innerHTML = '';
+  const items = await loadAssets();
+  items.forEach(a=>{
+    const div = document.createElement('div'); div.style.padding='6px 0'; div.style.borderBottom='1px solid #eee';
+    div.innerHTML = `<a href="${a.dataUrl}" download="${a.meta.name}">${a.meta.name}</a> <small>(${Math.round(a.meta.size/1024)} KB)</small>`;
+    list.appendChild(div);
+  });
+}
+
+// ===== Theme Builder =====
+function applyThemeBuilder() {
+  const p = document.getElementById('theme_primary').value;
+  const a = document.getElementById('theme_accent').value;
+  document.documentElement.style.setProperty('--primary-color', p);
+  document.documentElement.style.setProperty('--accent-color', a);
+  alert('Theme applied (stored in session). To persist, save template.');
+}
+function saveThemeTemplate() {
+  const p = document.getElementById('theme_primary').value;
+  const a = document.getElementById('theme_accent').value;
+  localStorage.setItem('eod_theme_template', JSON.stringify({primary:p,accent:a}));
+  alert('Theme saved to localStorage.');
+}
+
+// ===== Analytics =====
+function showAnalyticsPanel() {
+  document.getElementById('analyticsPanel').style.display = 'block';
+  const data = loadData();
+  document.getElementById('analytics_total_ops').textContent = data.filter(d=>d.role==='Operator').length;
+  const onLeave = Object.keys(leaveSchedule || {}).reduce((acc,name)=>{
+    (leaveSchedule[name]||[]).forEach(e=>{
+      const now = new Date().toISOString().split('T')[0];
+      if (now >= e.start && now <= e.end) acc++;
+    });
+    return acc;
+  },0);
+  document.getElementById('analytics_onleave').textContent = onLeave;
+  // simple workload breakdown
+  const workload = {};
+  data.forEach(r => { const key = r.dept||r.department||'EOD'; workload[key] = (workload[key]||0)+1; });
+  const chart = document.getElementById('analytics_chart'); chart.innerHTML = '';
+  for (const k in workload) {
+    const div = document.createElement('div'); div.style.margin='6px 0';
+    div.innerHTML = `<strong>${k}</strong>: ${workload[k]} members`;
+    chart.appendChild(div);
+  }
+}
+
+function exportAnalyticsPDF() {
+  alert('PDF export stub — implement server-side or use jsPDF in production.');
+}
+
+// ===== Access Log UI =====
+async function renderAccessLogPreview() {
+  const div = document.getElementById('accessLogPreview');
+  const logs = await recentAccessLogs(10);
+  div.innerHTML = logs.map(l=>`<div>${new Date(l.ts).toLocaleString()}: ${l.action} (${l.by||'system'})</div>`).join('');
+}
+
+// Hook login to access log
+const originalHandleLogin = window.handleLogin;
+window.handleLogin = function() {
+  originalHandleLogin();
+  if (currentRole) {
+    addAccessLog({action:'login', by:currentRole, detail: (document.getElementById('username')?document.getElementById('username').value:'')});
+    renderAccessLogPreview();
+  }
+};
+
+// Hook logout as well
+const originalLogOut = window.logOut;
+window.logOut = function() {
+  originalLogOut();
+  addAccessLog({action:'logout', by:currentRole});
+  renderAccessLogPreview();
+};
+
+// ===== Browser Notification helper =====
+function notifyBrowser(title, body) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "granted") {
+    new Notification(title, {body});
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(p => { if (p==='granted') new Notification(title, {body}); });
+  }
+}
+
+// ===== Utility: add controls to top bar for new modules =====
+function injectNewTopControls() {
+  const container = document.getElementById('controls-container');
+  const btnAdmin = document.createElement('button'); btnAdmin.textContent='⚙️ Admin'; btnAdmin.style.background='#455A64'; btnAdmin.style.color='white';
+  btnAdmin.onclick = showAdminPanel;
+  container.insertBefore(btnAdmin, container.firstChild);
+
+  const btnMsg = document.createElement('button'); btnMsg.textContent='✉️ Messages'; btnMsg.style.background='#0288D1'; btnMsg.style.color='white';
+  btnMsg.onclick = openMessageCenter;
+  container.insertBefore(btnMsg, container.firstChild);
+
+  const btnAssets = document.createElement('button'); btnAssets.textContent='📁 Assets'; btnAssets.style.background='#6D4C41'; btnAssets.style.color='white';
+  btnAssets.onclick = ()=>{ document.getElementById('assetManagerModal').style.display='block'; renderAssets(); };
+  container.insertBefore(btnAssets, container.firstChild);
+
+  const btnAnalytics = document.createElement('button'); btnAnalytics.textContent='📊 Analytics'; btnAnalytics.style.background='#263238'; btnAnalytics.style.color='white';
+  btnAnalytics.onclick = showAnalyticsPanel;
+  container.insertBefore(btnAnalytics, container.firstChild);
+
+  const btnTheme = document.createElement('button'); btnTheme.textContent='🎨 Theme'; btnTheme.style.background='#512DA8'; btnTheme.style.color='white';
+  btnTheme.onclick = ()=>{ document.getElementById('themeBuilderModal').style.display='block'; };
+  container.insertBefore(btnTheme, container.firstChild);
+}
+
+// Run once on load
+window.addEventListener('DOMContentLoaded', function() {
+  injectNewTopControls();
+  openDB().then(()=> renderAccessLogPreview());
+});
+
+</script>
+</body>
+</html>
