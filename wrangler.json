@@ -1,5 +1,5 @@
 {
-  "name": "eod-operator",
+  "name": "oromia-bank-eod-operators-schedules",
   "compatibility_date": "2025-11-27",
   "assets": {
     "directory": "./",
